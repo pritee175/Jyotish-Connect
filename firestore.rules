@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Admin UID — hardcode yours here after first login
+    function isAdmin() {
+      return request.auth != null &&
+             request.auth.uid == 'qakPJ9dO67XBLmN3NK6Us7UDfjG3';
+    }
+
+    function isLoggedIn() {
+      return request.auth != null;
+    }
+
+    // Users can read/write their own profile
+    match /users/{userId} {
+      allow read, write: if request.auth.uid == userId || isAdmin();
+
+      // Saved persons subcollection
+      match /savedPersons/{personId} {
+        allow read, write: if request.auth.uid == userId;
+      }
+    }
+
+    // Queries
+    match /queries/{queryId} {
+      // Users can create queries and read their own
+      allow create: if isLoggedIn();
+      allow read: if isLoggedIn() &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+
+      // Users can update only paymentNote field (submit payment)
+      allow update: if isLoggedIn() && (
+        isAdmin() ||
+        (resource.data.userId == request.auth.uid &&
+         request.resource.data.diff(resource.data).affectedKeys()
+           .hasOnly(['paymentNote', 'status', 'paidAt', 'deadline', 'updatedAt', 'messages']))
+      );
+    }
+
+    // Templates — admin writes, logged-in users read (for future public horoscope feature)
+    match /templates/{templateId} {
+      allow read: if isLoggedIn();
+      allow write: if isAdmin();
+    }
+
+    // Remedies — admin writes, logged-in users read
+    match /remedies/{remedyId} {
+      allow read: if isLoggedIn();
+      allow write: if isAdmin();
+    }
+  }
+}
