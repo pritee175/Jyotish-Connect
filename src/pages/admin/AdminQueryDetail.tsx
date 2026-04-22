@@ -1,6 +1,27 @@
 import { useState, useEffect, useRef } from 'react'
 
 // Web Speech API — not fully typed in standard TS DOM lib
+interface SpeechRecognitionResult {
+  readonly [index: number]: SpeechRecognitionAlternative
+  readonly length: number
+  isFinal: boolean
+}
+
+interface SpeechRecognitionAlternative {
+  readonly transcript: string
+  readonly confidence: number
+}
+
+interface SpeechRecognitionResultList {
+  readonly [index: number]: SpeechRecognitionResult
+  readonly length: number
+}
+
+interface SpeechRecognitionEvent extends Event {
+  readonly results: SpeechRecognitionResultList
+  readonly resultIndex: number
+}
+
 interface ISpeechRecognition extends EventTarget {
   continuous: boolean
   interimResults: boolean
@@ -187,7 +208,7 @@ export function AdminQueryDetail() {
         <Divider />
 
         {/* Person details */}
-        <div className="grid grid-cols-3 gap-2 text-xs mb-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs mb-3">
           {[
             ['Name',   query.personDetails.name],
             ['DOB',    query.personDetails.dob],
@@ -216,7 +237,7 @@ export function AdminQueryDetail() {
       {query.status === 'pending_review' && (
         <Card className="mb-4 border-orange-200 bg-orange-50">
           <h3 className="font-semibold text-gray-900 mb-3">Set Consultation Fee</h3>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <div className="relative flex-1">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₹</span>
               <input
@@ -228,15 +249,17 @@ export function AdminQueryDetail() {
               />
             </div>
             {/* Quick fee buttons */}
-            {[200, 300, 500, 1000].map(v => (
-              <button
-                key={v}
-                onClick={() => setFee(String(v))}
-                className="px-3 py-2 text-xs bg-white border border-gray-200 rounded-lg hover:border-saffron-300 hover:bg-saffron-50"
-              >
-                ₹{v}
-              </button>
-            ))}
+            <div className="flex gap-2">
+              {[200, 300, 500, 1000].map(v => (
+                <button
+                  key={v}
+                  onClick={() => setFee(String(v))}
+                  className="px-3 py-2 text-xs bg-white border border-gray-200 rounded-lg hover:border-saffron-300 hover:bg-saffron-50 flex-1 sm:flex-none"
+                >
+                  ₹{v}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="flex gap-2 mt-3">
             <Button loading={submitting} onClick={handleSetFee} className="flex-1">
@@ -293,14 +316,14 @@ export function AdminQueryDetail() {
 
           {/* Answer panel */}
           <Card className="mb-4">
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
               <h3 className="font-semibold text-gray-900">{T('sendAnswer')}</h3>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button variant="secondary" size="sm" onClick={() => setShowTpl(true)}>
-                  📄 {T('insertTemplate')}
+                  📄 <span className="hidden sm:inline">{T('insertTemplate')}</span><span className="sm:hidden">Template</span>
                 </Button>
                 <Button variant="secondary" size="sm" onClick={() => setShowRemedy(true)}>
-                  💎 {T('insertRemedy')}
+                  💎 <span className="hidden sm:inline">{T('insertRemedy')}</span><span className="sm:hidden">Remedy</span>
                 </Button>
                 <button
                   onClick={listening ? stopListening : startListening}
@@ -310,7 +333,7 @@ export function AdminQueryDetail() {
                       : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-purple-50'
                   }`}
                 >
-                  🎤 {listening ? 'Stop' : T('useVoice')}
+                  🎤 {listening ? 'Stop' : <span className="hidden sm:inline">{T('useVoice')}</span>}<span className="sm:hidden">Voice</span>
                 </button>
               </div>
             </div>

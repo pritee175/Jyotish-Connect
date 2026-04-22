@@ -6,7 +6,7 @@ import clsx from 'clsx'
 
 export function Navbar() {
   const { user, isAdmin, logout } = useAuth()
-  const { T, lang, toggleLang }   = useLang()
+  const { T, toggleLang }   = useLang()
   const loc = useLocation()
 
   const userLinks = [
@@ -78,13 +78,13 @@ export function Navbar() {
 
       {/* Mobile nav */}
       {user && (
-        <div className="md:hidden flex overflow-x-auto gap-1 px-4 pb-2">
+        <div className="md:hidden flex overflow-x-auto gap-1 px-4 pb-2 scrollbar-hide">
           {links.map(l => (
             <Link
               key={l.to}
               to={l.to}
               className={clsx(
-                'px-3 py-1 rounded-full text-xs whitespace-nowrap transition-colors',
+                'px-3 py-1 rounded-full text-xs whitespace-nowrap transition-colors shrink-0',
                 loc.pathname.startsWith(l.to)
                   ? 'bg-saffron-500 text-white font-medium'
                   : 'bg-gray-100 text-gray-600'

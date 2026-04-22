@@ -89,14 +89,14 @@ export function Modal({ open, onClose, title, children }: {
 }) {
   if (!open) return null
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+      <div className="relative bg-white rounded-t-2xl sm:rounded-2xl shadow-xl w-full max-w-lg max-h-[85vh] sm:max-h-[90vh] overflow-y-auto modal-mobile">
+        <div className="sticky top-0 bg-white flex items-center justify-between p-4 border-b border-gray-100 z-10">
           <h2 className="font-semibold text-gray-900">{title}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl min-w-[44px] min-h-[44px] flex items-center justify-center -mr-2">✕</button>
         </div>
-        <div className="p-4">{children}</div>
+        <div className="p-4 pb-safe">{children}</div>
       </div>
     </div>
   )

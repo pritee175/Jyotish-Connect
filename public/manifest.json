@@ -1,0 +1,18 @@
+{
+  "name": "JyotishConnect - ज्योतिषकनेक्ट",
+  "short_name": "JyotishConnect",
+  "description": "Trusted astrology consultations platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f97316",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/om.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

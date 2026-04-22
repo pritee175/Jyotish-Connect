@@ -60,12 +60,12 @@ export function RemediesPage() {
       </div>
 
       {/* Type filter */}
-      <div className="flex gap-2 overflow-x-auto pb-1 mb-4">
+      <div className="flex gap-2 overflow-x-auto pb-2 mb-4 -mx-4 px-4 scrollbar-hide">
         {(['all', ...REMEDY_TYPES] as (RemedyType | 'all')[]).map(type => (
           <button
             key={type}
             onClick={() => setFilter(type)}
-            className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap font-medium transition-colors flex items-center gap-1
+            className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap font-medium transition-colors flex items-center gap-1 shrink-0
               ${filter === type ? 'bg-saffron-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
           >
             {type !== 'all' && REMEDY_ICONS[type as RemedyType]}

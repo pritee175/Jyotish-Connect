@@ -52,7 +52,7 @@ export function AdminInbox() {
       />
 
       {/* Filter tabs */}
-      <div className="flex gap-1 overflow-x-auto pb-1 mb-4">
+      <div className="flex gap-1 overflow-x-auto pb-2 mb-4 -mx-4 px-4 scrollbar-hide">
         {FILTERS.map((f, i) => {
           const count = queries.filter(q =>
             f.statuses === 'all' || f.statuses.includes(q.status)
@@ -62,7 +62,7 @@ export function AdminInbox() {
               key={i}
               onClick={() => setFilter(i)}
               className={clsx(
-                'px-3 py-1.5 rounded-full text-xs whitespace-nowrap font-medium transition-colors',
+                'px-3 py-1.5 rounded-full text-xs whitespace-nowrap font-medium transition-colors shrink-0',
                 filter === i
                   ? 'bg-saffron-500 text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'

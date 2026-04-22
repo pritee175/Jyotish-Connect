@@ -104,10 +104,10 @@ export function QueryDetailPage() {
 
           {/* UPI ID */}
           <div className="flex items-center gap-2 bg-white border border-yellow-200 rounded-lg p-3 mb-3">
-            <span className="text-sm font-mono text-gray-800 flex-1">{ADMIN_UPI}</span>
+            <span className="text-sm font-mono text-gray-800 flex-1 break-all">{ADMIN_UPI}</span>
             <button
               onClick={copyUpi}
-              className="text-xs text-saffron-600 font-medium hover:underline"
+              className="text-xs text-saffron-600 font-medium hover:underline whitespace-nowrap shrink-0"
             >
               {copied ? '✓ ' + T('copied') : T('copyUpi')}
             </button>
@@ -116,7 +116,7 @@ export function QueryDetailPage() {
           {/* UPI deeplink */}
           <a
             href={`upi://pay?pa=${ADMIN_UPI}&am=${query.fee}&tn=AstroQuery`}
-            className="block w-full bg-saffron-500 text-white text-center py-2.5 rounded-lg text-sm font-medium hover:bg-saffron-600 mb-3"
+            className="block w-full bg-saffron-500 text-white text-center py-3 rounded-lg text-sm font-medium hover:bg-saffron-600 mb-3 active:bg-saffron-700"
           >
             📱 Open GPay / PhonePe / Paytm
           </a>
@@ -189,7 +189,7 @@ export function QueryDetailPage() {
       {/* Person details */}
       <Card className="mb-4">
         <h3 className="font-semibold text-gray-800 mb-3 text-sm">📋 Person Details</h3>
-        <div className="grid grid-cols-2 gap-2 text-sm">
+        <div className="grid grid-cols-2 gap-3 text-sm">
           {[
             ['Name', query.personDetails.name],
             ['DOB', query.personDetails.dob],
@@ -201,14 +201,14 @@ export function QueryDetailPage() {
           ].map(([k, v]) => (
             <div key={k}>
               <span className="text-gray-400 text-xs">{k}</span>
-              <p className="font-medium text-gray-700">{v}</p>
+              <p className="font-medium text-gray-700 break-words">{v}</p>
             </div>
           ))}
         </div>
         {query.personDetails.pastRemedies && (
-          <div className="mt-2">
+          <div className="mt-3">
             <span className="text-gray-400 text-xs">Past remedies</span>
-            <p className="text-sm text-gray-700">{query.personDetails.pastRemedies}</p>
+            <p className="text-sm text-gray-700 mt-1">{query.personDetails.pastRemedies}</p>
           </div>
         )}
       </Card>
