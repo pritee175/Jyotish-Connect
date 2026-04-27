@@ -3,7 +3,8 @@ import {
 } from 'react'
 import {
   User, onAuthStateChanged, signOut,
-  RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult
+  RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult,
+  createUserWithEmailAndPassword, signInWithEmailAndPassword
 } from 'firebase/auth'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { auth, db, ADMIN_UID } from '@/lib/firebase'
@@ -16,6 +17,8 @@ interface AuthContextType {
   loading:        boolean
   sendOtp:        (phone: string, recaptcha: RecaptchaVerifier) => Promise<ConfirmationResult>
   confirmOtp:     (result: ConfirmationResult, otp: string, name?: string) => Promise<void>
+  signUpWithEmail: (email: string, password: string, name: string, phone: string) => Promise<void>
+  signInWithEmail: (email: string, password: string) => Promise<void>
   logout:         () => Promise<void>
   updateProfile:  (data: Partial<UserProfile>) => Promise<void>
 }
@@ -75,6 +78,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => signOut(auth)
 
+  const signUpWithEmail = async (email: string, password: string, name: string, phone: string) => {
+    const cred = await createUserWithEmailAndPassword(auth, email, password)
+    const u = cred.user
+    const newProfile: UserProfile = {
+      uid: u.uid,
+      name,
+      phone,
+      email: u.email ?? email,
+      createdAt: new Date().toISOString(),
+      lang: 'en',
+    }
+    await setDoc(doc(db, 'users', u.uid), newProfile)
+    setProfile(newProfile)
+  }
+
+  const signInWithEmail = async (email: string, password: string) => {
+    await signInWithEmailAndPassword(auth, email, password)
+  }
+
   const updateProfile = async (data: Partial<UserProfile>) => {
     if (!user) return
     const ref = doc(db, 'users', user.uid)
@@ -85,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider value={{
       user, profile, isAdmin, loading,
-      sendOtp, confirmOtp, logout, updateProfile
+      sendOtp, confirmOtp, signUpWithEmail, signInWithEmail, logout, updateProfile
     }}>
       {children}
     </AuthContext.Provider>
