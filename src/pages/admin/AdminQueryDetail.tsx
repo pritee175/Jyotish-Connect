@@ -201,6 +201,11 @@ export function AdminQueryDetail() {
           <div className="flex flex-col items-end gap-1">
             <StatusBadge status={query.status} />
             {query.fee && <span className="text-sm font-semibold text-saffron-600">₹{query.fee}</span>}
+            {query.paymentMethod && (
+              <span className="text-xs text-gray-500">
+                {query.paymentMethod === 'razorpay' ? '💳 Razorpay' : '📱 UPI'}
+              </span>
+            )}
             {query.deadline && <Countdown deadline={query.deadline} />}
           </div>
         </div>

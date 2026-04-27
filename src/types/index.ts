@@ -9,6 +9,8 @@ export interface UserProfile {
   email:     string
   createdAt: string
   lang:      Lang
+  fcmToken?: string
+  fcmTokenUpdatedAt?: string
 }
 
 // ─── Query ───────────────────────────────────────────────────────────────────
@@ -63,6 +65,9 @@ export interface AstroQuery {
   status:       QueryStatus
   fee?:         number        // INR set by admin
   paymentNote?: string        // UPI transaction ref / note
+  paymentId?:   string        // Razorpay payment ID
+  orderId?:     string        // Razorpay order ID
+  paymentMethod?: 'upi' | 'razorpay'
   answer?:      string        // final answer from papa
   templateIds?: string[]      // templates used in answer
   messages:     QueryMessage[]

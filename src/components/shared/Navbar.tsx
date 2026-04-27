@@ -1,12 +1,14 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { useLang } from '@/hooks/useLang'
+import { useNotifications } from '@/hooks/useNotifications'
 import { Button } from './UI'
 import clsx from 'clsx'
 
 export function Navbar() {
   const { user, isAdmin, logout } = useAuth()
   const { T, toggleLang }   = useLang()
+  const { isEnabled, enableNotifications } = useNotifications()
   const loc = useLocation()
 
   const userLinks = [
@@ -56,6 +58,18 @@ export function Navbar() {
 
         {/* Right side */}
         <div className="flex items-center gap-2 shrink-0">
+          {/* Notification Bell */}
+          {user && !isEnabled && (
+            <button
+              onClick={enableNotifications}
+              className="relative p-2 text-gray-600 hover:text-saffron-600 hover:bg-saffron-50 rounded-lg transition-colors"
+              title="Enable notifications"
+            >
+              <span className="text-xl">🔔</span>
+              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+          )}
+          
           {/* Language toggle */}
           <button
             onClick={toggleLang}

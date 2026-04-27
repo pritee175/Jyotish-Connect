@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useLang } from '@/hooks/useLang'
+import { useAuth } from '@/hooks/useAuth'
 import { subscribeQuery, confirmPayment, addMessage } from '@/lib/db'
+import { openRazorpayPayment } from '@/lib/razorpay'
 import {
   Card, Button, StatusBadge, DomainIcon,
   Textarea, Input, Spinner, Divider, Countdown
@@ -14,6 +16,7 @@ const ADMIN_UPI = import.meta.env.VITE_ADMIN_UPI ?? 'astrologer@upi'
 export function QueryDetailPage() {
   const { id }        = useParams<{ id: string }>()
   const { T }         = useLang()
+  const { user, profile } = useAuth()
   const navigate      = useNavigate()
 
   const [query,    setQuery]    = useState<AstroQuery | null>(null)
@@ -23,6 +26,7 @@ export function QueryDetailPage() {
   const [sending,  setSending]  = useState(false)
   const [paying,   setPaying]   = useState(false)
   const [copied,   setCopied]   = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'upi'>('razorpay')
 
   useEffect(() => {
     if (!id) return
@@ -33,7 +37,35 @@ export function QueryDetailPage() {
     return unsub
   }, [id])
 
-  const handlePayment = async () => {
+  const handleRazorpayPayment = async () => {
+    if (!query || !query.fee || !user || !profile) return
+    
+    setPaying(true)
+    try {
+      await openRazorpayPayment({
+        queryId: id!,
+        amount: query.fee,
+        userName: profile.name,
+        userEmail: profile.email,
+        userPhone: profile.phone,
+        onSuccess: (paymentId, orderId) => {
+          console.log('Payment successful:', paymentId, orderId)
+          toast.success(T('paymentSubmitted'))
+        },
+        onFailure: (error) => {
+          console.error('Payment failed:', error)
+          toast.error('Payment failed. Please try again.')
+        }
+      })
+    } catch (error) {
+      console.error('Payment error:', error)
+      toast.error('Failed to process payment')
+    } finally {
+      setPaying(false)
+    }
+  }
+
+  const handleUPIPayment = async () => {
     if (!txnId.trim()) { toast.error('Enter transaction ID'); return }
     setPaying(true)
     try {
@@ -100,36 +132,86 @@ export function QueryDetailPage() {
         <Card className="mb-4 border-yellow-200 bg-yellow-50">
           <h3 className="font-semibold text-gray-900 mb-1">💳 {T('payNow')}</h3>
           <p className="text-2xl font-bold text-saffron-600 mb-3">₹{query.fee}</p>
-          <p className="text-sm text-gray-600 mb-3">{T('paymentInstructions')}</p>
+          <p className="text-sm text-gray-600 mb-4">{T('paymentInstructions')}</p>
 
-          {/* UPI ID */}
-          <div className="flex items-center gap-2 bg-white border border-yellow-200 rounded-lg p-3 mb-3">
-            <span className="text-sm font-mono text-gray-800 flex-1 break-all">{ADMIN_UPI}</span>
+          {/* Payment Method Toggle */}
+          <div className="flex gap-2 mb-4">
             <button
-              onClick={copyUpi}
-              className="text-xs text-saffron-600 font-medium hover:underline whitespace-nowrap shrink-0"
+              onClick={() => setPaymentMethod('razorpay')}
+              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+                paymentMethod === 'razorpay'
+                  ? 'bg-saffron-500 text-white'
+                  : 'bg-white border border-gray-200 text-gray-600'
+              }`}
             >
-              {copied ? '✓ ' + T('copied') : T('copyUpi')}
+              💳 Card/UPI/Wallet
+            </button>
+            <button
+              onClick={() => setPaymentMethod('upi')}
+              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+                paymentMethod === 'upi'
+                  ? 'bg-saffron-500 text-white'
+                  : 'bg-white border border-gray-200 text-gray-600'
+              }`}
+            >
+              📱 Manual UPI
             </button>
           </div>
 
-          {/* UPI deeplink */}
-          <a
-            href={`upi://pay?pa=${ADMIN_UPI}&am=${query.fee}&tn=AstroQuery`}
-            className="block w-full bg-saffron-500 text-white text-center py-3 rounded-lg text-sm font-medium hover:bg-saffron-600 mb-3 active:bg-saffron-700"
-          >
-            📱 Open GPay / PhonePe / Paytm
-          </a>
+          {/* Razorpay Payment */}
+          {paymentMethod === 'razorpay' && (
+            <div>
+              <div className="bg-white border border-yellow-200 rounded-lg p-4 mb-3">
+                <p className="text-sm text-gray-700 mb-2">✅ Secure payment via Razorpay</p>
+                <p className="text-xs text-gray-500">
+                  • Pay with Credit/Debit Card, UPI, Netbanking, or Wallet
+                  <br />• Instant payment confirmation
+                  <br />• No need to enter transaction ID
+                </p>
+              </div>
+              <Button 
+                className="w-full" 
+                loading={paying} 
+                onClick={handleRazorpayPayment}
+              >
+                🔒 Pay ₹{query.fee} Securely
+              </Button>
+            </div>
+          )}
 
-          <Input
-            label={T('transactionId')}
-            value={txnId}
-            onChange={e => setTxnId(e.target.value)}
-            placeholder="e.g. YBL123456789"
-          />
-          <Button className="w-full mt-3" loading={paying} onClick={handlePayment}>
-            {T('submitPayment')}
-          </Button>
+          {/* Manual UPI Payment */}
+          {paymentMethod === 'upi' && (
+            <div>
+              {/* UPI ID */}
+              <div className="flex items-center gap-2 bg-white border border-yellow-200 rounded-lg p-3 mb-3">
+                <span className="text-sm font-mono text-gray-800 flex-1 break-all">{ADMIN_UPI}</span>
+                <button
+                  onClick={copyUpi}
+                  className="text-xs text-saffron-600 font-medium hover:underline whitespace-nowrap shrink-0"
+                >
+                  {copied ? '✓ ' + T('copied') : T('copyUpi')}
+                </button>
+              </div>
+
+              {/* UPI deeplink */}
+              <a
+                href={`upi://pay?pa=${ADMIN_UPI}&am=${query.fee}&tn=AstroQuery`}
+                className="block w-full bg-saffron-500 text-white text-center py-3 rounded-lg text-sm font-medium hover:bg-saffron-600 mb-3 active:bg-saffron-700"
+              >
+                📱 Open GPay / PhonePe / Paytm
+              </a>
+
+              <Input
+                label={T('transactionId')}
+                value={txnId}
+                onChange={e => setTxnId(e.target.value)}
+                placeholder="e.g. YBL123456789"
+              />
+              <Button className="w-full mt-3" loading={paying} onClick={handleUPIPayment}>
+                {T('submitPayment')}
+              </Button>
+            </div>
+          )}
         </Card>
       )}
 
