@@ -26,9 +26,7 @@ export function QueryDetailPage() {
   const [sending,  setSending]  = useState(false)
   const [paying,   setPaying]   = useState(false)
   const [copied,   setCopied]   = useState(false)
-  const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'upi'>(
-    isRazorpayConfigured() ? 'razorpay' : 'upi'
-  )
+  const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'upi'>('upi')
   const razorpayEnabled = isRazorpayConfigured()
 
   useEffect(() => {
@@ -141,6 +139,16 @@ export function QueryDetailPage() {
           {razorpayEnabled && (
             <div className="flex gap-2 mb-4">
               <button
+                onClick={() => setPaymentMethod('upi')}
+                className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+                  paymentMethod === 'upi'
+                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white'
+                    : 'bg-white border border-gray-200 text-gray-600'
+                }`}
+              >
+                📱 GPay/PhonePe
+              </button>
+              <button
                 onClick={() => setPaymentMethod('razorpay')}
                 className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
                   paymentMethod === 'razorpay'
@@ -148,17 +156,7 @@ export function QueryDetailPage() {
                     : 'bg-white border border-gray-200 text-gray-600'
                 }`}
               >
-                💳 Card/UPI/Wallet
-              </button>
-              <button
-                onClick={() => setPaymentMethod('upi')}
-                className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
-                  paymentMethod === 'upi'
-                    ? 'bg-saffron-500 text-white'
-                    : 'bg-white border border-gray-200 text-gray-600'
-                }`}
-              >
-                📱 Manual UPI
+                💳 Card/Wallet
               </button>
             </div>
           )}
@@ -187,6 +185,24 @@ export function QueryDetailPage() {
           {/* Manual UPI Payment */}
           {(!razorpayEnabled || paymentMethod === 'upi') && (
             <div>
+              {/* Direct UPI Payment Button - Opens PhonePe/GPay/Paytm */}
+              <a
+                href={`upi://pay?pa=${ADMIN_UPI}&pn=JyotishConnect&am=${query.fee}&cu=INR&tn=Astrology%20Consultation%20Query%20${id?.slice(0, 8)}`}
+                className="block w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-center py-4 rounded-lg text-base font-semibold hover:from-purple-700 hover:to-indigo-700 mb-4 active:scale-95 transition-transform shadow-lg"
+              >
+                📱 Open GPay / PhonePe / Paytm
+              </a>
+
+              {/* Alternative: Manual Entry */}
+              <div className="relative mb-4">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-200"></div>
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="px-2 bg-yellow-50 text-gray-500">Or pay manually and enter transaction ID</span>
+                </div>
+              </div>
+
               {/* UPI ID */}
               <div className="flex items-center gap-2 bg-white border border-yellow-200 rounded-lg p-3 mb-3">
                 <span className="text-sm font-mono text-gray-800 flex-1 break-all">{ADMIN_UPI}</span>
@@ -197,14 +213,6 @@ export function QueryDetailPage() {
                   {copied ? '✓ ' + T('copied') : T('copyUpi')}
                 </button>
               </div>
-
-              {/* UPI deeplink */}
-              <a
-                href={`upi://pay?pa=${ADMIN_UPI}&am=${query.fee}&tn=AstroQuery`}
-                className="block w-full bg-saffron-500 text-white text-center py-3 rounded-lg text-sm font-medium hover:bg-saffron-600 mb-3 active:bg-saffron-700"
-              >
-                📱 Open GPay / PhonePe / Paytm
-              </a>
 
               <Input
                 label={T('transactionId')}
