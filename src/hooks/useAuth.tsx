@@ -4,7 +4,8 @@ import {
 import {
   User, onAuthStateChanged, signOut,
   RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult,
-  createUserWithEmailAndPassword, signInWithEmailAndPassword
+  createUserWithEmailAndPassword, signInWithEmailAndPassword,
+  GoogleAuthProvider, signInWithPopup
 } from 'firebase/auth'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { auth, db, ADMIN_UID } from '@/lib/firebase'
@@ -19,6 +20,7 @@ interface AuthContextType {
   confirmOtp:     (result: ConfirmationResult, otp: string, name?: string) => Promise<void>
   signUpWithEmail: (email: string, password: string, name: string, phone: string) => Promise<void>
   signInWithEmail: (email: string, password: string) => Promise<void>
+  signInWithGoogle: () => Promise<void>
   logout:         () => Promise<void>
   updateProfile:  (data: Partial<UserProfile>) => Promise<void>
 }
@@ -97,6 +99,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await signInWithEmailAndPassword(auth, email, password)
   }
 
+  const signInWithGoogle = async () => {
+    const provider = new GoogleAuthProvider()
+    const cred = await signInWithPopup(auth, provider)
+    const u = cred.user
+    
+    // Check if user profile exists
+    const ref = doc(db, 'users', u.uid)
+    const snap = await getDoc(ref)
+    
+    if (!snap.exists()) {
+      // Create new profile for first-time Google sign-in
+      const newProfile: UserProfile = {
+        uid: u.uid,
+        name: u.displayName ?? '',
+        phone: u.phoneNumber ?? '',
+        email: u.email ?? '',
+        createdAt: new Date().toISOString(),
+        lang: 'en',
+      }
+      await setDoc(ref, newProfile)
+      setProfile(newProfile)
+    } else {
+      setProfile(snap.data() as UserProfile)
+    }
+  }
+
   const updateProfile = async (data: Partial<UserProfile>) => {
     if (!user) return
     const ref = doc(db, 'users', user.uid)
@@ -107,7 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider value={{
       user, profile, isAdmin, loading,
-      sendOtp, confirmOtp, signUpWithEmail, signInWithEmail, logout, updateProfile
+      sendOtp, confirmOtp, signUpWithEmail, signInWithEmail, signInWithGoogle, logout, updateProfile
     }}>
       {children}
     </AuthContext.Provider>
