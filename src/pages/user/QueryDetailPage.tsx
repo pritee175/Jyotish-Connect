@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useLang } from '@/hooks/useLang'
 import { useAuth } from '@/hooks/useAuth'
 import { subscribeQuery, confirmPayment, addMessage } from '@/lib/db'
-import { openRazorpayPayment } from '@/lib/razorpay'
+import { openRazorpayPayment, isRazorpayConfigured } from '@/lib/razorpay'
 import {
   Card, Button, StatusBadge, DomainIcon,
   Textarea, Input, Spinner, Divider, Countdown
@@ -26,7 +26,10 @@ export function QueryDetailPage() {
   const [sending,  setSending]  = useState(false)
   const [paying,   setPaying]   = useState(false)
   const [copied,   setCopied]   = useState(false)
-  const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'upi'>('razorpay')
+  const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'upi'>(
+    isRazorpayConfigured() ? 'razorpay' : 'upi'
+  )
+  const razorpayEnabled = isRazorpayConfigured()
 
   useEffect(() => {
     if (!id) return
@@ -134,32 +137,34 @@ export function QueryDetailPage() {
           <p className="text-2xl font-bold text-saffron-600 mb-3">₹{query.fee}</p>
           <p className="text-sm text-gray-600 mb-4">{T('paymentInstructions')}</p>
 
-          {/* Payment Method Toggle */}
-          <div className="flex gap-2 mb-4">
-            <button
-              onClick={() => setPaymentMethod('razorpay')}
-              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
-                paymentMethod === 'razorpay'
-                  ? 'bg-saffron-500 text-white'
-                  : 'bg-white border border-gray-200 text-gray-600'
-              }`}
-            >
-              💳 Card/UPI/Wallet
-            </button>
-            <button
-              onClick={() => setPaymentMethod('upi')}
-              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
-                paymentMethod === 'upi'
-                  ? 'bg-saffron-500 text-white'
-                  : 'bg-white border border-gray-200 text-gray-600'
-              }`}
-            >
-              📱 Manual UPI
-            </button>
-          </div>
+          {/* Payment Method Toggle - Only show if Razorpay is configured */}
+          {razorpayEnabled && (
+            <div className="flex gap-2 mb-4">
+              <button
+                onClick={() => setPaymentMethod('razorpay')}
+                className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+                  paymentMethod === 'razorpay'
+                    ? 'bg-saffron-500 text-white'
+                    : 'bg-white border border-gray-200 text-gray-600'
+                }`}
+              >
+                💳 Card/UPI/Wallet
+              </button>
+              <button
+                onClick={() => setPaymentMethod('upi')}
+                className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+                  paymentMethod === 'upi'
+                    ? 'bg-saffron-500 text-white'
+                    : 'bg-white border border-gray-200 text-gray-600'
+                }`}
+              >
+                📱 Manual UPI
+              </button>
+            </div>
+          )}
 
           {/* Razorpay Payment */}
-          {paymentMethod === 'razorpay' && (
+          {razorpayEnabled && paymentMethod === 'razorpay' && (
             <div>
               <div className="bg-white border border-yellow-200 rounded-lg p-4 mb-3">
                 <p className="text-sm text-gray-700 mb-2">✅ Secure payment via Razorpay</p>
@@ -180,7 +185,7 @@ export function QueryDetailPage() {
           )}
 
           {/* Manual UPI Payment */}
-          {paymentMethod === 'upi' && (
+          {(!razorpayEnabled || paymentMethod === 'upi') && (
             <div>
               {/* UPI ID */}
               <div className="flex items-center gap-2 bg-white border border-yellow-200 rounded-lg p-3 mb-3">

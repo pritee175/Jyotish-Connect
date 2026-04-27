@@ -5,6 +5,11 @@ import toast from 'react-hot-toast'
 // Razorpay configuration
 const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || ''
 
+// Check if Razorpay is configured
+export function isRazorpayConfigured(): boolean {
+  return RAZORPAY_KEY_ID.length > 0
+}
+
 // Load Razorpay script
 export function loadRazorpayScript(): Promise<boolean> {
   return new Promise((resolve) => {

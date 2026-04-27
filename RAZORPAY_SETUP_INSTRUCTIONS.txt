@@ -1,0 +1,76 @@
+===========================================
+RAZORPAY SETUP INSTRUCTIONS
+===========================================
+
+STEP 1: Create Razorpay Account
+--------------------------------
+1. Go to: https://razorpay.com
+2. Click 'Sign Up' and create account
+3. Verify your email and phone number
+
+STEP 2: Complete KYC (Required for Live Payments)
+-------------------------------------------------
+1. Login to Razorpay Dashboard
+2. Go to Settings → Account & Settings
+3. Complete KYC verification:
+   - Business details
+   - Bank account details
+   - Upload documents (PAN, Aadhaar, etc.)
+4. Wait for approval (usually 24-48 hours)
+
+STEP 3: Get API Keys
+--------------------
+1. Go to: https://dashboard.razorpay.com/app/keys
+2. You'll see two modes:
+   
+   TEST MODE (for testing):
+   - Key ID: rzp_test_XXXXX
+   - Key Secret: XXXXX
+   
+   LIVE MODE (for real payments - after KYC):
+   - Key ID: rzp_live_XXXXX
+   - Key Secret: XXXXX
+
+3. Copy both Key ID and Key Secret
+
+STEP 4: Add Keys to Your Project
+---------------------------------
+Add to .env file:
+VITE_RAZORPAY_KEY_ID=rzp_live_YOUR_KEY_ID
+
+Add to Vercel Environment Variables:
+VITE_RAZORPAY_KEY_ID=rzp_live_YOUR_KEY_ID
+RAZORPAY_KEY_SECRET=YOUR_KEY_SECRET
+
+STEP 5: Test Payment
+--------------------
+For TEST mode, use these test cards:
+- Success: 4111 1111 1111 1111
+- Failure: 4000 0000 0000 0002
+- CVV: Any 3 digits
+- Expiry: Any future date
+
+For LIVE mode:
+- Use real cards
+- Real money will be charged
+- Money goes to your bank account
+
+STEP 6: Pricing
+---------------
+Razorpay charges:
+- 2% per transaction
+- Example: ₹500 query → ₹10 fee → You get ₹490
+- No setup fee
+- No monthly fee
+
+STEP 7: Settlement
+------------------
+- Money settles to your bank in T+1 days
+- Example: Payment on Monday → Money in bank on Tuesday
+- Can enable instant settlement (extra charges apply)
+
+===========================================
+CURRENT STATUS: Waiting for your Razorpay keys
+===========================================
+
+Once you have the keys, paste them in .env file and restart the server.
