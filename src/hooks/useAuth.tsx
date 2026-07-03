@@ -8,7 +8,7 @@ import {
   GoogleAuthProvider, signInWithPopup
 } from 'firebase/auth'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
-import { auth, db, ADMIN_UID } from '@/lib/firebase'
+import { auth, db, ADMIN_UIDS } from '@/lib/firebase'
 import type { UserProfile } from '@/types'
 
 interface AuthContextType {
