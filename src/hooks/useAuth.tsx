@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const isAdmin = user?.uid === ADMIN_UID
+  const isAdmin = !!user && ADMIN_UIDS.includes(user.uid)
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
