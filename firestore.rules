@@ -3,11 +3,13 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // Admin UID — hardcode yours here after first login
-    function isAdmin() {
-      return request.auth != null &&
-             request.auth.uid == 'qakPJ9dO67XBLmN3NK6Us7UDfjG3';
-    }
-
+   function isAdmin() {
+  return request.auth != null &&
+         request.auth.uid in [
+           't3iHlz17i2dO9bxxcjHh8stPaik1'
+           // add the phone-login UID here once you have it, e.g. , 'PHONE_UID_HERE'
+         ];
+}
     function isLoggedIn() {
       return request.auth != null;
     }
