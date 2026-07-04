@@ -8,7 +8,7 @@ import {
   GoogleAuthProvider, signInWithPopup
 } from 'firebase/auth'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
-import { auth, db, ADMIN_UIDS } from '@/lib/firebase'
+import { auth, db, ADMIN_EMAILS } from '@/lib/firebase'
 import type { UserProfile } from '@/types'
 
 interface AuthContextType {
@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const isAdmin = !!user && ADMIN_UIDS.includes(user.uid)
+  const isAdmin = !!user && !!user.email && ADMIN_EMAILS.includes(user.email.toLowerCase())
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {

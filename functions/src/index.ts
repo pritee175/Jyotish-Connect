@@ -227,20 +227,19 @@ export const sendPaymentReminders = functions.pubsub
     return null
   })
 
-// Helper function to notify admin
+const ADMIN_EMAILS = ['karpepritee71@gmail.com', 'ashokkarpe1973@gmail.com']
+
+// Helper function to notify all admins
 async function notifyAdmin(type: string, data: { title: string; body: string; queryId: string }) {
-  const adminUID = functions.config().admin?.uid || process.env.VITE_ADMIN_UID
-  
-  if (!adminUID) {
-    console.error('Admin UID not configured')
-    return
-  }
-  
-  // Get admin's FCM token
-  const adminDoc = await admin.firestore().doc(`users/${adminUID}`).get()
-  const fcmToken = adminDoc.data()?.fcmToken
-  
-  if (fcmToken) {
+  const adminUsers = await admin.firestore()
+    .collection('users')
+    .where('email', 'in', ADMIN_EMAILS)
+    .get()
+
+  for (const adminDoc of adminUsers.docs) {
+    const fcmToken = adminDoc.data()?.fcmToken
+    if (!fcmToken) continue
+
     const message = {
       notification: {
         title: data.title,
@@ -252,10 +251,10 @@ async function notifyAdmin(type: string, data: { title: string; body: string; qu
       },
       token: fcmToken
     }
-    
+
     try {
       await admin.messaging().send(message)
-      console.log('Admin notification sent:', type)
+      console.log('Admin notification sent:', type, 'to', adminDoc.id)
     } catch (error) {
       console.error('Error sending admin notification:', error)
     }

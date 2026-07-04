@@ -22,8 +22,8 @@ export const getMessagingInstance = async () => {
   if (!supported) return null
   return getMessaging(app)
 }
-// Comma-separated list of admin UIDs (set VITE_ADMIN_UID in Vercel, e.g. "uid1,uid2")
-export const ADMIN_UIDS = (import.meta.env.VITE_ADMIN_UID as string || '')
-  .split(',')
-  .map(u => u.trim())
-  .filter(Boolean)
+// Emails allowed to access the admin panel
+export const ADMIN_EMAILS = [
+  'karpepritee71@gmail.com',
+  'ashokkarpe1973@gmail.com',
+]
