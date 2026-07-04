@@ -48,9 +48,9 @@ module.exports = async (req, res) => {
     })
   } catch (error) {
     console.error('Error creating order:', error)
-    return res.status(500).json({ 
+    return res.status(500).json({
       error: 'Failed to create order',
-      message: error.message 
+      message: error.message || error.error?.description || JSON.stringify(error)
     })
   }
 }
