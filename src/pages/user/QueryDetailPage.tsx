@@ -26,7 +26,7 @@ export function QueryDetailPage() {
   const [sending,  setSending]  = useState(false)
   const [paying,   setPaying]   = useState(false)
   const [copied,   setCopied]   = useState(false)
-  const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'upi'>('upi')
+  const [showManualUpi, setShowManualUpi] = useState(false)
   const razorpayEnabled = isRazorpayConfigured()
 
   useEffect(() => {
@@ -130,100 +130,63 @@ export function QueryDetailPage() {
 
       {/* Fee + Payment */}
       {query.status === 'fee_set' && query.fee && (
-        <Card className="mb-4 border-yellow-200 bg-yellow-50">
-          <h3 className="font-semibold text-gray-900 mb-1">💳 {T('payNow')}</h3>
-          <p className="text-2xl font-bold text-saffron-600 mb-3">₹{query.fee}</p>
-          <p className="text-sm text-gray-600 mb-4">{T('paymentInstructions')}</p>
-
-          {/* Payment Method Toggle - Only show if Razorpay is configured */}
-          {razorpayEnabled && (
-            <div className="flex gap-2 mb-4">
-              <button
-                onClick={() => setPaymentMethod('upi')}
-                className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
-                  paymentMethod === 'upi'
-                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white'
-                    : 'bg-white border border-gray-200 text-gray-600'
-                }`}
-              >
-                📱 GPay/PhonePe
-              </button>
-              <button
-                onClick={() => setPaymentMethod('razorpay')}
-                className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
-                  paymentMethod === 'razorpay'
-                    ? 'bg-saffron-500 text-white'
-                    : 'bg-white border border-gray-200 text-gray-600'
-                }`}
-              >
-                💳 Card/Wallet
-              </button>
-            </div>
-          )}
-
-          {/* Razorpay Payment */}
-          {razorpayEnabled && paymentMethod === 'razorpay' && (
+        <Card className="mb-4">
+          <div className="flex items-start justify-between mb-4">
             <div>
-              <div className="bg-white border border-yellow-200 rounded-lg p-4 mb-3">
-                <p className="text-sm text-gray-700 mb-2">✅ Secure payment via Razorpay</p>
-                <p className="text-xs text-gray-500">
-                  • Pay with Credit/Debit Card, UPI, Netbanking, or Wallet
-                  <br />• Instant payment confirmation
-                  <br />• No need to enter transaction ID
-                </p>
-              </div>
-              <Button 
-                className="w-full" 
-                loading={paying} 
-                onClick={handleRazorpayPayment}
-              >
-                🔒 Pay ₹{query.fee} Securely
-              </Button>
+              <p className="text-sm text-gray-500">{T('payNow')}</p>
+              <p className="text-3xl font-bold text-gray-900 mt-0.5">₹{query.fee}</p>
             </div>
-          )}
+            <span className="text-xs font-medium text-gray-400 border border-gray-200 rounded-full px-2.5 py-1 mt-1">
+              Query #{id?.slice(0, 6)}
+            </span>
+          </div>
 
-          {/* Manual UPI Payment */}
-          {(!razorpayEnabled || paymentMethod === 'upi') && (
-            <div>
-              {/* Direct UPI Payment Button - Opens PhonePe/GPay/Paytm */}
-              <a
-                href={`upi://pay?pa=${ADMIN_UPI}&pn=JyotishConnect&am=${query.fee}&cu=INR&tn=Astrology%20Consultation%20Query%20${id?.slice(0, 8)}`}
-                className="block w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-center py-4 rounded-lg text-base font-semibold hover:from-purple-700 hover:to-indigo-700 mb-4 active:scale-95 transition-transform shadow-lg"
-              >
-                📱 Open GPay / PhonePe / Paytm
-              </a>
-
-              {/* Alternative: Manual Entry */}
-              <div className="relative mb-4">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200"></div>
-                </div>
-                <div className="relative flex justify-center text-xs">
-                  <span className="px-2 bg-yellow-50 text-gray-500">Or pay manually and enter transaction ID</span>
-                </div>
-              </div>
-
-              {/* UPI ID */}
-              <div className="flex items-center gap-2 bg-white border border-yellow-200 rounded-lg p-3 mb-3">
-                <span className="text-sm font-mono text-gray-800 flex-1 break-all">{ADMIN_UPI}</span>
-                <button
-                  onClick={copyUpi}
-                  className="text-xs text-saffron-600 font-medium hover:underline whitespace-nowrap shrink-0"
-                >
-                  {copied ? '✓ ' + T('copied') : T('copyUpi')}
-                </button>
-              </div>
-
-              <Input
-                label={T('transactionId')}
-                value={txnId}
-                onChange={e => setTxnId(e.target.value)}
-                placeholder="e.g. YBL123456789"
-              />
-              <Button className="w-full mt-3" loading={paying} onClick={handleUPIPayment}>
-                {T('submitPayment')}
+          {razorpayEnabled ? (
+            <>
+              <Button className="w-full" size="lg" loading={paying} onClick={handleRazorpayPayment}>
+                Pay ₹{query.fee}
               </Button>
-            </div>
+              <p className="text-xs text-gray-400 text-center mt-2">
+                UPI, cards, netbanking & wallets — secured by Razorpay
+              </p>
+
+              <button
+                onClick={() => setShowManualUpi(v => !v)}
+                className="text-xs text-gray-500 hover:text-gray-700 hover:underline mt-4 block mx-auto"
+              >
+                {showManualUpi ? 'Hide manual payment' : 'Already paid via UPI app? Submit reference here'}
+              </button>
+
+              {showManualUpi && (
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <ManualUpiForm
+                    adminUpi={ADMIN_UPI}
+                    fee={query.fee}
+                    queryId={id!}
+                    copied={copied}
+                    onCopy={copyUpi}
+                    txnId={txnId}
+                    onTxnIdChange={setTxnId}
+                    paying={paying}
+                    onSubmit={handleUPIPayment}
+                    T={T}
+                  />
+                </div>
+              )}
+            </>
+          ) : (
+            <ManualUpiForm
+              adminUpi={ADMIN_UPI}
+              fee={query.fee}
+              queryId={id!}
+              copied={copied}
+              onCopy={copyUpi}
+              txnId={txnId}
+              onTxnIdChange={setTxnId}
+              paying={paying}
+              onSubmit={handleUPIPayment}
+              T={T}
+            />
           )}
         </Card>
       )}
@@ -307,6 +270,61 @@ export function QueryDetailPage() {
           </div>
         )}
       </Card>
+    </div>
+  )
+}
+
+function ManualUpiForm({
+  adminUpi, fee, queryId, copied, onCopy, txnId, onTxnIdChange, paying, onSubmit, T,
+}: {
+  adminUpi: string
+  fee: number
+  queryId: string
+  copied: boolean
+  onCopy: () => void
+  txnId: string
+  onTxnIdChange: (v: string) => void
+  paying: boolean
+  onSubmit: () => void
+  T: (k: string) => string
+}) {
+  return (
+    <div>
+      <a
+        href={`upi://pay?pa=${adminUpi}&pn=JyotishConnect&am=${fee}&cu=INR&tn=Astrology%20Consultation%20Query%20${queryId.slice(0, 8)}`}
+        className="flex items-center justify-center gap-2 w-full bg-saffron-500 text-white text-center py-3 rounded-lg text-sm font-semibold hover:bg-saffron-600 active:bg-saffron-700 transition-colors mb-3"
+      >
+        Pay via GPay / PhonePe / Paytm
+      </a>
+
+      <div className="relative mb-3">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-200"></div>
+        </div>
+        <div className="relative flex justify-center text-xs">
+          <span className="px-2 bg-white text-gray-400">or pay manually and enter reference below</span>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg p-3 mb-3">
+        <span className="text-sm font-mono text-gray-800 flex-1 break-all">{adminUpi}</span>
+        <button
+          onClick={onCopy}
+          className="text-xs text-saffron-600 font-medium hover:underline whitespace-nowrap shrink-0"
+        >
+          {copied ? '✓ ' + T('copied') : T('copyUpi')}
+        </button>
+      </div>
+
+      <Input
+        label={T('transactionId')}
+        value={txnId}
+        onChange={e => onTxnIdChange(e.target.value)}
+        placeholder="e.g. YBL123456789"
+      />
+      <Button className="w-full mt-3" variant="secondary" loading={paying} onClick={onSubmit}>
+        {T('submitPayment')}
+      </Button>
     </div>
   )
 }

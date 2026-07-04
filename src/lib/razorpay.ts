@@ -51,14 +51,11 @@ export async function createRazorpayOrder(queryId: string, amount: number): Prom
       const data = await response.json()
       return data.orderId
     }
-    
-    // If API fails, generate a client-side order ID for testing
-    console.warn('Backend API not available, using client-side order generation')
-    return `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+
+    throw new Error(`Failed to create order: ${response.status}`)
   } catch (error) {
     console.error('Error creating Razorpay order:', error)
-    // Fallback: generate a temporary order ID for local testing
-    return `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    throw error
   }
 }
 
@@ -168,14 +165,12 @@ async function verifyPayment(
       const data = await response.json()
       return data.verified === true
     }
-    
-    // If backend not available, accept payment (for local testing only)
-    console.warn('Backend verification not available, accepting payment for testing')
-    return true
+
+    console.error('Payment verification request failed:', response.status)
+    return false
   } catch (error) {
     console.error('Error verifying payment:', error)
-    // For local testing, return true (REMOVE IN PRODUCTION)
-    return true
+    return false
   }
 }
 
